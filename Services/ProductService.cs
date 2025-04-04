@@ -1,28 +1,65 @@
-﻿using Microsoft.OpenApi.Any;
+﻿using orders_api.DTO.Product;
+using orders_api.Models;
 
 namespace orders_api.Services
 {
     public class ProductService: IProductService
     {
-        public Task<IEnumerable<AnyType>> GetProductsAsync()
+        private readonly IProductRepository _repository;
+
+        public ProductService(IProductRepository repository)
         {
-            throw new NotImplementedException();
+            _repository = repository;
         }
-        public Task<AnyType> GetProductByIdAsync(int id)
+
+        public async Task<IEnumerable<ProductResponse>> GetProductsAsync()
         {
-            throw new NotImplementedException();
+            var products = await _repository.GetProductsAsync();
+
+            var productResponses = products.Select(p => new ProductResponse(p));
+
+            return productResponses;
         }
-        public Task<AnyType> CreateProductAsync(AnyType product)
+
+        public async Task<ProductResponse?> GetProductByIdAsync(int id)
         {
-            throw new NotImplementedException();
+            var product = await _repository.GetProductByIdAsync(id);
+
+            if (product == null)
+            {
+                return null;
+            }
+
+            return new ProductResponse(product);
         }
-        public Task<AnyType> UpdateProductAsync(int id, AnyType product)
+
+        public async Task<ProductResponse> CreateProductAsync(Product product)
         {
-            throw new NotImplementedException();
+            var productCreate = new ProductCreate
+            {
+                Name = product.Name,
+                Price = product.Price,
+                Description = product.Description,
+                Category = product.Category,
+            };
+
+            var newProduct = await _repository.CreateProductAsync(productCreate);
+
+            return new ProductResponse(product);
         }
-        public Task<bool> DeleteProductAsync(int id)
+        public async Task<ProductResponse?> UpdateProductAsync(int id, ProductUpdateDto product)
         {
-            throw new NotImplementedException();
+
+
+            var updatedProduct = await _repository.UpdateProductAsync(id, product);
+
+            if (updatedProduct == null) return null;
+
+            return new ProductResponse(updatedProduct);
+        }
+        public async Task<bool> DeleteProductAsync(int id)
+        {
+            return await _repository.DeleteProductAsync(id);
         }
     }
 }

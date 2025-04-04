@@ -11,7 +11,7 @@ namespace orders_api.Models
         [Required]
         [MaxLength(200)]
         public string Name { get; set; }
-        
+
         public string Description { get; set; }
 
         [Precision(18, 2)]
@@ -19,7 +19,7 @@ namespace orders_api.Models
         public decimal Price { get; set; }
 
         // Simple category in string format for demonstration purposes
-        public string Category { get; set; }
+        public string Category { get; set; } = "General";
 
         // Navigation property for related OrderItems
 
@@ -27,8 +27,7 @@ namespace orders_api.Models
 
         public Product()
         {
-            OrderItems = new HashSet<OrderItem>();
-            Category = "General";
+            OrderItems = new List<OrderItem>();
         }
     }
 }
