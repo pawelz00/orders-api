@@ -1,13 +1,13 @@
-﻿using Microsoft.OpenApi.Any;
+﻿using orders_api.DTO.Order;
 
 namespace orders_api.Services
 {
     public interface IOrderService
     {
-        Task<IEnumerable<AnyType>> GetOrdersAsync();
-        Task<AnyType> GetOrderByIdAsync(int id);
-        Task<AnyType> CreateOrderAsync(AnyType product);
-        Task<AnyType> UpdateOrderAsync(int id, AnyType product);
+        Task<IEnumerable<OrderResponse>> GetOrdersAsync();
+        Task<OrderResponse?> GetOrderByIdAsync(int id);
         Task<bool> DeleteOrderAsync(int id);
+        Task<OrderResponse?> AddProductsToOrder(int id, List<OrderItemCreate> products);
+        Task<OrderResponse?> DeleteProductsFromOrder(int id, List<int> productIds);
     }
 }

@@ -1,32 +1,52 @@
-﻿using Microsoft.OpenApi.Any;
+﻿
+using orders_api.DTO.Order;
+using orders_api.DTO.Product;
 
 namespace orders_api.Services
 {
     public class OrderService : IOrderService
     {
-        public Task<AnyType> CreateOrderAsync(AnyType product)
+        private readonly IOrderRepository _repository;
+
+        public OrderService(IOrderRepository repository)
         {
-            throw new NotImplementedException();
+            _repository = repository;
         }
 
-        public Task<bool> DeleteOrderAsync(int id)
+        public async Task<bool> DeleteOrderAsync(int id)
         {
-            throw new NotImplementedException();
+            return await _repository.DeleteOrderAsync(id);
         }
 
-        public Task<AnyType> GetOrderByIdAsync(int id)
+        public async Task<OrderResponse?> GetOrderByIdAsync(int id)
         {
-            throw new NotImplementedException();
+            var product = await _repository.GetOrderByIdAsync(id);
+
+            if (product == null)
+            {
+                return null;
+            }
+
+            return product;
         }
 
-        public Task<IEnumerable<AnyType>> GetOrdersAsync()
+        public async Task<IEnumerable<OrderResponse>> GetOrdersAsync()
         {
-            throw new NotImplementedException();
+            return await _repository.GetOrdersAsync();
         }
 
-        public Task<AnyType> UpdateOrderAsync(int id, AnyType product)
+        public async Task<OrderResponse?> AddProductsToOrder(int id, List<OrderItemCreate> requestData)
         {
-            throw new NotImplementedException();
+            var order = await _repository.AddProductsToOrder(id, requestData);
+
+            return order;
+        }
+
+        public Task<OrderResponse?> DeleteProductsFromOrder(int id, List<int> productIds)
+        {
+            var order = _repository.DeleteProductsFromOrder(id, productIds);
+
+            return order;
         }
     }
 }

@@ -76,7 +76,7 @@ public class ProductsController : ControllerBase
 
         if (deleted == false)
         {
-            return BadRequest("Product is ordered.");
+            return BadRequest("Product is ordered - remove order first!");
         }
 
         return NoContent();

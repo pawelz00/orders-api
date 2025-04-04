@@ -43,7 +43,7 @@ namespace orders_api.Services
                 Category = product.Category,
             };
 
-            var newProduct = await _repository.CreateProductAsync(productCreate);
+            await _repository.CreateProductAsync(productCreate);
 
             return new ProductResponse(product);
         }

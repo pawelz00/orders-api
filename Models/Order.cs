@@ -16,8 +16,8 @@ namespace orders_api.Models
         
         [Required]
         public DateTime OrderDate { get; set; }
-        
-        public string Status { get; set; } // "Pending", "Shipped", "Delivered"
+
+        public string Status { get; set; }
 
         // Navigation property for related OrderItems
         public virtual ICollection<OrderItem> OrderItems { get; set; }
