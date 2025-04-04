@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Microsoft.EntityFrameworkCore;
+using System.ComponentModel.DataAnnotations;
 
 namespace orders_api.Models
 {
@@ -12,7 +13,8 @@ namespace orders_api.Models
         public string Name { get; set; }
         
         public string Description { get; set; }
-        
+
+        [Precision(18, 2)]
         [Required]
         public decimal Price { get; set; }
 
