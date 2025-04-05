@@ -35,7 +35,7 @@ public class ProductsController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<ActionResult<Product>> PostProduct(Product product)
+    public async Task<ActionResult<Product>> PostProduct([FromBody] Product product)
     {
         if (!ModelState.IsValid)
         {

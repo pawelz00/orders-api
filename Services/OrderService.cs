@@ -1,6 +1,4 @@
-﻿
-using orders_api.DTO.Order;
-using orders_api.DTO.Product;
+﻿using orders_api.DTO.Order;
 
 namespace orders_api.Services
 {
@@ -35,18 +33,32 @@ namespace orders_api.Services
             return await _repository.GetOrdersAsync();
         }
 
-        public async Task<OrderResponse?> AddProductsToOrder(int id, List<OrderItemCreate> requestData)
+        public async Task<OrderResponse?> AddProductsToOrderAsync(int id, List<OrderItemCreate> requestData)
         {
-            var order = await _repository.AddProductsToOrder(id, requestData);
+            var order = await _repository.AddProductsToOrderAsync(id, requestData);
 
             return order;
         }
 
-        public Task<OrderResponse?> DeleteProductsFromOrder(int id, List<int> productIds)
+        public async Task<OrderResponse?> DeleteProductsFromOrderAsync(int id, List<int> productIds)
         {
-            var order = _repository.DeleteProductsFromOrder(id, productIds);
+            var order = await _repository.DeleteProductsFromOrderAsync(id, productIds);
 
             return order;
+        }
+
+        public async Task<OrderResponse?> CreateOrderAsync(OrderCreate order)
+        {
+            var createdOrder = await _repository.CreateOrderAsync(order);
+
+            return createdOrder;
+        }
+
+        public Task<OrderResponse?> UpdateOrderAsync(int id, OrderUpdate order)
+        {
+            var updatedOrder = _repository.UpdateOrderAsync(id, order);
+
+            return updatedOrder;
         }
     }
 }

@@ -16,25 +16,71 @@ public class OrdersController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetProducts()
+    public async Task<IActionResult> GetOrders()
     {
         var products = await _orderService.GetOrdersAsync();
         return Ok(products);
     }
 
     [HttpGet("{id}")]
-    public async Task<IActionResult> GetProductById(int id)
+    public async Task<IActionResult> GetOrderById(int id)
     {
         var product = await _orderService.GetOrderByIdAsync(id);
+
         if (product == null)
         {
             return NotFound();
         }
+
         return Ok(product);
     }
 
+    [HttpPost]
+    public async Task<IActionResult> PostOrder([FromBody] OrderCreate order)
+    {
+
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(ModelState);
+        }
+
+        var createdOrder = await _orderService.CreateOrderAsync(order);
+
+        if (createdOrder == null)
+        {
+            return BadRequest("Failed to create order.");
+        }
+
+        return CreatedAtAction(nameof(PostOrder), createdOrder);
+    }
+
+    [HttpPut("{id}")]
+    public async Task<IActionResult> PutOrder(int id, [FromBody] OrderUpdate order)
+    {
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(ModelState);
+        }
+        
+        var existingOrder = await _orderService.GetOrderByIdAsync(id);
+        
+        if (existingOrder == null)
+        {
+            return NotFound();
+        }
+
+        var updatedOrder = await _orderService.UpdateOrderAsync(id, order);
+        
+        if (updatedOrder == null)
+        {
+            return BadRequest("Failed to update order.");
+        }
+
+        return Ok(updatedOrder);
+    }
+
     [HttpDelete("{id}")]
-    public async Task<IActionResult> DeleteProduct(int id)
+    public async Task<IActionResult> DeleteOrder(int id)
     {
         var order = await _orderService.GetOrderByIdAsync(id);
 
@@ -63,7 +109,7 @@ public class OrdersController : ControllerBase
             return NotFound();
         }
 
-        var updated = await _orderService.AddProductsToOrder(id, products);
+        var updated = await _orderService.AddProductsToOrderAsync(id, products);
 
         if (updated == null)
         {
@@ -84,7 +130,7 @@ public class OrdersController : ControllerBase
             return NotFound();
         }
 
-        var updated = await _orderService.DeleteProductsFromOrder(id, productIds);
+        var updated = await _orderService.DeleteProductsFromOrderAsync(id, productIds);
         
         if (updated == null)
         {

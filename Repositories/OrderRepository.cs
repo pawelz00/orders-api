@@ -8,8 +8,10 @@ public interface IOrderRepository
     Task<IEnumerable<OrderResponse>> GetOrdersAsync();
     Task<OrderResponse?> GetOrderByIdAsync(int id);
     Task<bool> DeleteOrderAsync(int id);
-    Task<OrderResponse?> AddProductsToOrder(int id, List<OrderItemCreate> products);
-    Task<OrderResponse?> DeleteProductsFromOrder(int id, List<int> productIds);
+    Task<OrderResponse?> AddProductsToOrderAsync(int id, List<OrderItemCreate> products);
+    Task<OrderResponse?> DeleteProductsFromOrderAsync(int id, List<int> productIds);
+    Task<OrderResponse?> CreateOrderAsync(OrderCreate order);
+    Task<OrderResponse?> UpdateOrderAsync(int id, OrderUpdate order);
 }
 
 namespace orders_api.Repositories
@@ -41,7 +43,6 @@ namespace orders_api.Repositories
                     }).ToList()
                 })
                 .ToListAsync();
-
             return items;
         }
 
@@ -68,6 +69,56 @@ namespace orders_api.Repositories
             return item;
         }
 
+        public async Task<OrderResponse?> CreateOrderAsync(OrderCreate order)
+        {
+            // Check if products exist in db
+            var productIds = order.Products.Select(p => p.ProductId).ToList();
+            var productsInDb = await _context.Products
+                .Where(p => productIds.Contains(p.Id))
+                .Select(p => new ProductResponse(p))
+                .ToListAsync();
+
+            if (productsInDb == null || productsInDb.Count != productIds.Count)
+            {
+                return null;
+            }
+
+            // Make sure that the quantities are valid (greater than 0)
+            foreach (var product in order.Products)
+            {
+                if (product.Quantity <= 0)
+                {
+                    return null;
+                }
+            }
+
+            // Create a new order
+            var newOrder = new Models.Order
+            {
+                CustomerName = order.CustomerName,
+                ShippingAddress = order.ShippingAddress,
+                OrderDate = order.OrderDate,
+                Status = order.Status
+            };
+
+            // Add products to the order
+            foreach (var product in order.Products)
+            {
+                newOrder.OrderItems.Add(new Models.OrderItem
+                {
+                    ProductId = product.ProductId,
+                    Quantity = product.Quantity
+                });
+            }
+
+            _context.Orders.Add(newOrder);
+            _context.SaveChanges();
+
+            var createdOrder = await GetOrderByIdAsync(newOrder.Id);
+
+            return createdOrder;
+        }
+
         public async Task<bool> DeleteOrderAsync(int id)
         {
             var deletedRows = await _context.Orders
@@ -77,7 +128,7 @@ namespace orders_api.Repositories
             return deletedRows > 0;
         }
 
-        public async Task<OrderResponse?> AddProductsToOrder(int orderId, List<OrderItemCreate> products)
+        public async Task<OrderResponse?> AddProductsToOrderAsync(int orderId, List<OrderItemCreate> products)
         {
             // Make sure that the product exists in db
             var productIds = products.Select(p => p.ProductId).ToList();
@@ -124,32 +175,15 @@ namespace orders_api.Repositories
                 });
             }
 
-            // Save changes to the database
              _context.Orders.Update(order);
             await _context.SaveChangesAsync();
 
-            // Return the updated order
-            var updatedOrder = await _context.Orders
-                .Include(o => o.OrderItems)
-                .ThenInclude(oi => oi.Product)
-                .Where(o => o.Id == orderId)
-                .Select(o => new OrderResponse
-                {
-                    CustomerName = o.CustomerName,
-                    ShippingAddress = o.ShippingAddress,
-                    OrderDate = o.OrderDate,
-                    Status = o.Status,
-                    products = o.OrderItems.Select(oi => new ProductResponseWithQuantity
-                    {
-                        Product = new ProductResponse(oi.Product),
-                        Quantity = oi.Quantity
-                    }).ToList()
-                })
-                .FirstOrDefaultAsync();
+            var updatedOrder = await GetOrderByIdAsync(orderId);
+            
             return updatedOrder;
         }
 
-        public async Task<OrderResponse?> DeleteProductsFromOrder(int id, List<int> productIds)
+        public async Task<OrderResponse?> DeleteProductsFromOrderAsync(int id, List<int> productIds)
         {
             // Check if order exists
             var order = await _context.Orders
@@ -184,23 +218,56 @@ namespace orders_api.Repositories
 
             await _context.SaveChangesAsync();
             
-            var updatedOrder = await _context.Orders
-                .Include(o => o.OrderItems)
-                .ThenInclude(oi => oi.Product)
-                .Where(o => o.Id == id)
-                .Select(o => new OrderResponse
+            var updatedOrder = await GetOrderByIdAsync(id);
+
+            return updatedOrder;
+        }
+
+        public async Task<OrderResponse?> UpdateOrderAsync(int id, OrderUpdate order)
+        {
+            var existingOrder = await _context.Orders.FindAsync(id);
+
+            if (existingOrder == null)
+            {
+                return null;
+            }
+
+            // Check if products exist in db
+            var productIds = order.Products?.Select(p => p.ProductId).ToList();
+            if (productIds != null)
+            {
+                var productsInDb = await _context.Products
+                    .Where(p => productIds.Contains(p.Id))
+                    .Select(p => new ProductResponse(p))
+                    .ToListAsync();
+
+                if (productsInDb == null || productsInDb.Count != productIds.Count)
                 {
-                    CustomerName = o.CustomerName,
-                    ShippingAddress = o.ShippingAddress,
-                    OrderDate = o.OrderDate,
-                    Status = o.Status,
-                    products = o.OrderItems.Select(oi => new ProductResponseWithQuantity
+                    return null;
+                }
+            }
+
+            if (order.CustomerName != null) existingOrder.CustomerName = order.CustomerName;
+            if (order.ShippingAddress != null) existingOrder.ShippingAddress = order.ShippingAddress;
+            if (order.Status != null) existingOrder.Status = order.Status;
+            if (order.Products != null)
+            {
+                _context.RemoveRange(_context.OrderItems.Where(oi => oi.OrderId == id));
+
+                foreach (var product in order.Products)
+                {
+                    existingOrder.OrderItems.Add(new Models.OrderItem
                     {
-                        Product = new ProductResponse(oi.Product),
-                        Quantity = oi.Quantity
-                    }).ToList()
-                })
-                .FirstOrDefaultAsync();
+                        ProductId = product.ProductId,
+                        Quantity = product.Quantity
+                    });
+                }
+            }
+
+            _context.Orders.Update(existingOrder);
+            await _context.SaveChangesAsync();
+
+            var updatedOrder = await GetOrderByIdAsync(id);
 
             return updatedOrder;
         }

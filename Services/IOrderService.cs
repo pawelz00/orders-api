@@ -7,7 +7,9 @@ namespace orders_api.Services
         Task<IEnumerable<OrderResponse>> GetOrdersAsync();
         Task<OrderResponse?> GetOrderByIdAsync(int id);
         Task<bool> DeleteOrderAsync(int id);
-        Task<OrderResponse?> AddProductsToOrder(int id, List<OrderItemCreate> products);
-        Task<OrderResponse?> DeleteProductsFromOrder(int id, List<int> productIds);
+        Task<OrderResponse?> AddProductsToOrderAsync(int id, List<OrderItemCreate> products);
+        Task<OrderResponse?> DeleteProductsFromOrderAsync(int id, List<int> productIds);
+        Task<OrderResponse?> CreateOrderAsync(OrderCreate order);
+        Task<OrderResponse?> UpdateOrderAsync(int id, OrderUpdate order);
     }
 }
