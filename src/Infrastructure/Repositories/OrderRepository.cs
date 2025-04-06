@@ -91,50 +91,92 @@ namespace OrdersApi.Infrastructure.Repositories
             }
 
             var existingOrder = await GetTrackedOrdersWithDetails().FirstOrDefaultAsync(o => o.Id == id);
+
             if (existingOrder == null)
             {
                 _logger.LogWarning("Order with ID {OrderId} not found for update.", id);
                 return null; 
             }
 
-            existingOrder.CustomerName = order.CustomerName;
+            _context.Orders.Entry(existingOrder).CurrentValues.SetValues(order);
 
             try
             {
                 await _context.SaveChangesAsync();
                 _logger.LogInformation("Updated order with ID {OrderId}", id);
-                return existingOrder; 
+                return existingOrder;
             }
             catch (DbUpdateConcurrencyException ex)
             {
                 _logger.LogError(ex, "Concurrency exception updating order with ID {OrderId}", id);
+
                 if (!await OrderExistsAsync(id))
                 {
                     _logger.LogWarning("Order with ID {OrderId} no longer exists after concurrency exception.", id);
                     return null;
                 }
+
                 else
                 {
                     throw;
                 }
             }
+
         }
 
-        // Todo: implement
-        public Task<Order?> AddProductsToOrderAsync(int orderId, IEnumerable<OrderItem> items)
+        public async Task<Order?> AddProductsToOrderAsync(int orderId, IEnumerable<OrderItem> items)
         {
-            // Implementation requires careful handling of existing items,
-            // fetching the order, adding items, and saving.
-            _logger.LogWarning("AddProductsToOrderAsync not fully implemented.");
-            throw new NotImplementedException();
+            var order = await GetTrackedOrdersWithDetails().FirstOrDefaultAsync(o => o.Id == orderId);
+
+            if (order == null)
+            {
+                _logger.LogWarning("Order with ID {OrderId} not found for adding products.", orderId);
+                return null;
+            }
+
+            foreach (var item in items)
+            {
+                var existingItem = order.OrderItems.FirstOrDefault(oi => oi.ProductId == item.ProductId);
+                if (existingItem != null)
+                {
+                    existingItem.Quantity += item.Quantity; 
+                }
+                else
+                {
+                    order.OrderItems.Add(item);
+                }
+            }
+
+            _context.Orders.Update(order);
+            await _context.SaveChangesAsync();
+           _logger.LogInformation("Added products to order with ID {OrderId}", orderId);
+            return order;
         }
 
-        public Task<Order?> DeleteProductsFromOrderAsync(int orderId, IEnumerable<int> productIds)
+        public async Task<Order?> DeleteProductsFromOrderAsync(int orderId, IEnumerable<int> productIds)
         {
-            // Implementation requires careful handling of existing items,
-            // fetching the order, finding and removing items, and saving.
-            _logger.LogWarning("DeleteProductsFromOrderAsync not fully implemented.");
-            throw new NotImplementedException();
+            var order = await GetTrackedOrdersWithDetails().FirstOrDefaultAsync(o => o.Id == orderId);
+
+            if (order == null)
+            {
+                _logger.LogWarning("Order with ID {OrderId} not found for deleting products.", orderId);
+                return await Task.FromResult<Order?>(null);
+            }
+
+            foreach (var productId in productIds)
+            {
+                var existingItem = order.OrderItems.FirstOrDefault(oi => oi.ProductId == productId);
+                if (existingItem != null)
+                {
+                    order.OrderItems.Remove(existingItem);
+                }
+            }
+
+
+            _context.Orders.Update(order);
+            await _context.SaveChangesAsync();
+            _logger.LogInformation("Deleted products from order with ID {OrderId}", orderId);
+            return order;
         }
     }
 }

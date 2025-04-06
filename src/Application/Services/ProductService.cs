@@ -83,8 +83,10 @@ namespace OrdersApi.Application.Services
                 return null;
             }
 
-            existingProduct.Name = productDto.Name;
-            existingProduct.Price = (decimal)productDto.Price;
+            if (productDto.Name != null) existingProduct.Name = productDto.Name;
+            if (productDto.Price != null) existingProduct.Price = (decimal)productDto.Price;
+            if (productDto.Description != null) existingProduct.Description = productDto.Description;
+            if (productDto.Category != null) existingProduct.Category = productDto.Category;
 
             var updatedProduct = await _productRepository.UpdateProductAsync(id, existingProduct); 
 

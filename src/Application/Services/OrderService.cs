@@ -103,25 +103,101 @@ namespace OrdersApi.Application.Services
             _logger.LogInformation("Attempting to update order with ID: {OrderId}", id);
             
             var order = await _orderRepository.GetOrderByIdAsync(id);
+
             if (order == null)
             {
                 _logger.LogWarning("Order with ID: {OrderId} not found for update.", id);
                 return null;
             }
 
-            order.CustomerName = orderDto.CustomerName;
+
+            if(orderDto.CustomerName != null) order.CustomerName = orderDto.CustomerName;
+            if(orderDto.ShippingAddress != null) order.ShippingAddress = orderDto.ShippingAddress;
+            if(orderDto.Status != null) order.Status = orderDto.Status;
+            if(orderDto.Products != null)
+            {
+                order.OrderItems = new List<OrderItem>();
+                foreach (var itemDto in orderDto.Products)
+                {
+                    var product = await _productRepository.GetProductByIdAsync(itemDto.ProductId);
+                    if (product == null)
+                    {
+                        _logger.LogError("Product with ID {ProductId} not found during order update.", itemDto.ProductId);
+                        throw new KeyNotFoundException($"Product with ID {itemDto.ProductId} not found.");
+                    }
+                    order.OrderItems.Add(new OrderItem
+                    {
+                        ProductId = product.Id,
+                        Quantity = itemDto.Quantity,
+                    });
+                }
+            }
 
             var updatedOrder = await _orderRepository.UpdateOrderAsync(id, order);
 
             if (updatedOrder == null)
             {
                 _logger.LogError("Failed to update order with ID: {OrderId} in repository.", id);
-                return null;            }
+                return null;            
+            }
 
             _logger.LogInformation("Successfully updated order with ID: {OrderId}", id);
 
 
             return MapOrderToDto(updatedOrder);
+        }
+
+        public async Task<OrderResponse?> AddItemsToOrderAsync(int id, List<OrderItemCreate> itemsDto)
+        {
+            _logger.LogInformation("Attempting to add items to order with ID: {OrderId}", id);
+
+            var order = await _orderRepository.GetOrderByIdAsync(id);
+
+            if (order == null)
+            {
+                _logger.LogWarning("Order with ID: {OrderId} not found for adding items.", id);
+                return null;
+            }
+
+            var updated = await _orderRepository.AddProductsToOrderAsync(id, itemsDto.Select(item => new OrderItem
+            {
+                ProductId = item.ProductId,
+                Quantity = item.Quantity
+            }));
+
+            if (updated == null)
+            {
+                _logger.LogError("Failed to add items to order with ID: {OrderId} in repository.", id);
+                return null;
+            }
+
+            _logger.LogInformation("Successfully added items to order with ID: {OrderId}", id);
+
+            return updated != null ? MapOrderToDto(updated) : null;
+        }
+
+        public async Task<OrderResponse?> RemoveItemsFromOrderAsync(int id, List<int> productIds)
+        {
+            _logger.LogInformation("Attempting to remove items from order with ID: {OrderId}", id);
+            
+            var order = await _orderRepository.GetOrderByIdAsync(id);
+            
+            if (order == null)
+            {
+                _logger.LogWarning("Order with ID: {OrderId} not found for removing items.", id);
+                return null;
+            }
+            
+            var updated = await _orderRepository.DeleteProductsFromOrderAsync(id, productIds);
+            
+            if (updated == null)
+            {
+                _logger.LogError("Failed to remove items from order with ID: {OrderId} in repository.", id);
+                return null;
+            }
+            
+            _logger.LogInformation("Successfully removed items from order with ID: {OrderId}", id);
+            return updated != null ? MapOrderToDto(updated) : null;
         }
 
         private static OrderResponse MapOrderToDto(Order order)
@@ -138,16 +214,6 @@ namespace OrdersApi.Application.Services
                     Quantity = oi.Quantity
                 }).ToList() ?? new List<ProductResponseWithQuantity>(),
             };
-        }
-
-        public Task<OrderResponse?> AddItemsToOrderAsync(int id, List<OrderItemCreate> itemsDto)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<OrderResponse?> RemoveItemsFromOrderAsync(int id, List<int> productIds)
-        {
-            throw new NotImplementedException();
         }
     }
 }

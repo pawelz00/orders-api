@@ -80,8 +80,6 @@ namespace OrdersApi.Infrastructure.Repositories
                 return null; 
             }
 
-            // Find the existing entity first to update it
-
             var existingProduct = await _context.Products.FindAsync(id);
             if (existingProduct == null)
             {
