@@ -24,7 +24,9 @@ namespace OrdersApi.Application.Services
             var product = new Product
             {
                 Name = productDto.Name,
-                Price = productDto.Price
+                Price = productDto.Price,
+                Description = productDto.Description,
+                Category = productDto.Category,
             };
 
             var createdProduct = await _productRepository.AddProductAsync(product);

@@ -56,6 +56,7 @@ namespace OrdersApi.API.Controllers
                 _logger.LogWarning("Invalid model state for PostProduct.");
                 return BadRequest(ModelState);
             }
+
             var createdProduct = await _productService.CreateProductAsync(productDto);
             
             return CreatedAtAction(nameof(GetProduct), new { id = createdProduct.Id }, createdProduct);

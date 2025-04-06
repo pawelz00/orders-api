@@ -121,7 +121,7 @@ namespace OrdersApi.API.Controllers
         [ProducesResponseType(typeof(OrderResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> AddItemsToOrder(int id, [FromBody] List<OrderItemCreate> orderItems)
+        public async Task<IActionResult> AddItemsToOrder(int id, [FromBody] List<OrderItemCreate> products)
         {
             _logger.LogInformation("API Endpoint called: AddItemsToOrder for Order ID {OrderId}", id);
 
@@ -131,7 +131,7 @@ namespace OrdersApi.API.Controllers
                 return BadRequest(ModelState);
             }
 
-            var updatedOrder = await _orderService.AddItemsToOrderAsync(id, orderItems);
+            var updatedOrder = await _orderService.AddItemsToOrderAsync(id, products);
 
             if (updatedOrder == null)
             {

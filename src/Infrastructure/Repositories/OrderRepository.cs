@@ -84,12 +84,6 @@ namespace OrdersApi.Infrastructure.Repositories
 
         public async Task<Order?> UpdateOrderAsync(int id, Order order)
         {
-            if (id != order.Id)
-            {
-                _logger.LogWarning("Mismatched ID during order update. Provided ID: {ProvidedId}, Order ID: {OrderId}", id, order.Id);
-                return null;
-            }
-
             var existingOrder = await GetTrackedOrdersWithDetails().FirstOrDefaultAsync(o => o.Id == id);
 
             if (existingOrder == null)
@@ -161,6 +155,12 @@ namespace OrdersApi.Infrastructure.Repositories
             {
                 _logger.LogWarning("Order with ID {OrderId} not found for deleting products.", orderId);
                 return await Task.FromResult<Order?>(null);
+            }
+
+            if (!order.OrderItems.Any(oi => productIds.Contains(oi.ProductId)))
+            {
+                _logger.LogWarning("No items found in order with ID {OrderId} for deletion.", orderId);
+                return null;
             }
 
             foreach (var productId in productIds)

@@ -27,7 +27,7 @@ namespace OrdersApi.Domain.Models
 
         public Product()
         {
-            OrderItems = new List<OrderItem>();
+            OrderItems = new HashSet<OrderItem>();
         }
     }
 }

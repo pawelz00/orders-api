@@ -26,8 +26,9 @@ namespace OrdersApi.Application.Services
 
             var order = new Order
             {
+                ShippingAddress = orderDto.ShippingAddress,
+                Status = orderDto.Status,
                 CustomerName = orderDto.CustomerName,
-                OrderDate = DateTime.UtcNow,
                 OrderItems = new List<OrderItem>()
             };
 
@@ -114,7 +115,7 @@ namespace OrdersApi.Application.Services
             if(orderDto.CustomerName != null) order.CustomerName = orderDto.CustomerName;
             if(orderDto.ShippingAddress != null) order.ShippingAddress = orderDto.ShippingAddress;
             if(orderDto.Status != null) order.Status = orderDto.Status;
-            if(orderDto.Products != null)
+            if(orderDto.Products!.Count > 0)
             {
                 order.OrderItems = new List<OrderItem>();
                 foreach (var itemDto in orderDto.Products)

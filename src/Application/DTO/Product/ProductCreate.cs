@@ -11,9 +11,11 @@ namespace OrdersApi.Application.DTO.Product
         [Required]
         [Range(0.01, (double)decimal.MaxValue)]
         public decimal Price { get; set; }
+
         [MaxLength(500)]
-        public string Description { get; set; }
+        public string Description { get; set; } = string.Empty;
+        
         [MaxLength(100)]
-        public string Category { get; set; }    
+        public string Category { get; set; } = "General";
     }
 }
