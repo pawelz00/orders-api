@@ -32,8 +32,8 @@ This project contains the API controllers and endpoints. It references the Appli
 - **POST /api/orders**: Creates a new order.
 - **PUT /api/orders/{id}**: Updates an existing order by ID.
 - **DELETE /api/orders/{id}**: Deletes an order by ID.
-- **POST /api/orders/{orderId}/products**: Adds products to an order.
-- **DELETE /api/orders/{orderId}/products**: Deletes products from an order.
+- **POST /api/orders/{orderId}/add-items**: Adds products to an order.
+- **DELETE /api/orders/{orderId}/remove-items**: Deletes products from an order.
 
 ### Products
 
