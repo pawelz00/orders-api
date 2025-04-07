@@ -1,0 +1,37 @@
+name: CI/CD Build and publish to Azure
+
+env:
+  AZURE_WEBAPP_NAME: orders-api-recruitment-task
+  DOTNET_VERSION: '9.x'
+  SOLUTION_PATH: "OrdersApi.sln"
+  API_PATH: "./src/API"
+  PUBLISH_DIR: "./publish"
+
+on:
+  workflow_dispatch:
+  push:
+    branches: 
+      - master
+
+jobs:
+  build:
+    name: Build project
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up .NET Core
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Restore
+        run: dotnet restore ${{ env.SOLUTION_PATH }}
+        
+      - name: Build 
+        run: dotnet build ${{ env.SOLUTION_PATH }} --configuration Release --no-restore
+
+      - name: Publish
+        run: dotnet publish ${{ env.API_PATH }} -configuration Release --no-restore --no-build --property:PublishDir=${{ env.PUBLISH_DIR }}
+
