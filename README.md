@@ -49,3 +49,41 @@ This project contains the API controllers and endpoints. It references the Appli
 2. **Application**: Implements the business logic and uses the domain models and interfaces.
 3. **Infrastructure**: Implements the repository interfaces using Entity Framework Core and provides the data access layer.
 4. **API**: Exposes the application functionality via HTTP endpoints and interacts with the application services.
+
+------------
+
+# CI/CD Pipeline for Orders API
+
+GitHub Actions automates the build and deployment of the Orders API to an Azure Web App.
+
+## Workflow Overview
+This workflow:
+1. Triggers on pushes to the `master` branch or manual dispatch.
+2. Builds the .NET project using `.NET 9.x`.
+3. Publishes the API to a specified directory.
+4. Uploads the build artifacts.
+5. Deploys the application to Azure Web App.
+
+## Environment Variables
+- `AZURE_WEBAPP_NAME`: Name of the Azure Web App.
+- `AZURE_WEBAPP_PACKAGE_PATH`: Path to the published app.
+- `DOTNET_VERSION`: .NET version to use.
+- `SOLUTION_PATH`: Path to the .NET solution file.
+- `API_PATH`: Path to the API project.
+- `PUBLISH_DIR`: Directory for the published output.
+
+## Secrets
+- `AZURE_WEBAPP_PUBLISH_PROFILE`: Azure publish profile for authentication.
+
+## Job Breakdown
+### Build Job
+1. Checks out the repository.
+2. Sets up .NET Core.
+3. Restores dependencies.
+4. Builds the solution in `Release` mode.
+5. Publishes the API.
+6. Uploads the published artifacts.
+
+### Deploy Job
+1. Downloads the published artifact.
+2. Deploys it to the Azure Web App
