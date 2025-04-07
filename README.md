@@ -87,3 +87,13 @@ This workflow:
 ### Deploy Job
 1. Downloads the published artifact.
 2. Deploys it to the Azure Web App
+
+------------
+
+# Azure
+
+Web API is deployed in Azure (Azure App Service) and uses Azure SQL Database.
+
+- Azure Web App: Hosts and runs the application.
+- Azure SQL Database: Stores application data.
+- Connection Strings: Used to connect the web application to the database.
