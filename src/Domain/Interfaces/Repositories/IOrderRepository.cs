@@ -1,5 +1,4 @@
-﻿
-using OrdersApi.Domain.Models;
+﻿using OrdersApi.Domain.Models;
 
 namespace OrdersApi.Domain.Interfaces.Repositories
 {

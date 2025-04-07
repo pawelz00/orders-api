@@ -6,6 +6,7 @@ using OrdersApi.Application.Services;
 using OrdersApi.Domain.Interfaces.Repositories;
 using OrdersApi.Infrastructure.Data;
 using OrdersApi.Infrastructure.Repositories;
+using Scalar.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -31,6 +32,7 @@ app.UseMiddleware<ErrorHandlerMiddleware>();
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
+    app.MapScalarApiReference();
 }
 
 app.UseHttpsRedirection();
