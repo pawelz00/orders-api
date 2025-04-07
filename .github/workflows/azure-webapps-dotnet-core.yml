@@ -2,6 +2,7 @@ name: CI/CD Build and publish to Azure
 
 env:
   AZURE_WEBAPP_NAME: orders-api-recruitment-task
+  AZURE_WEBAPP_PACKAGE_PATH: "./src/API/publish"
   DOTNET_VERSION: '9.x'
   SOLUTION_PATH: "OrdersApi.sln"
   API_PATH: "./src/API"
@@ -34,4 +35,31 @@ jobs:
 
       - name: Publish
         run: dotnet publish ${{ env.API_PATH }} --configuration Release --no-restore --no-build --property:PublishDir=${{ env.PUBLISH_DIR }}
+
+      - name: Publish Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: app
+          path: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
+
+  deploy:
+    name: Deploy to Azure
+    runs-on: ubuntu-latest
+    needs: [build]
+
+    steps:
+    - name: Download artifact
+      uses: actions/download-artifact@v4
+      with:
+        name: app
+        path: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
+    
+    - name: Deploy
+      uses: azure/webapps-deploy@v3
+      with:
+        app-name: ${{ env.AZURE_WEBAPP_NAME }}
+        publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
+        package: "${{ env.AZURE_WEBAPP_PACKAGE_PATH }}"
+
+      
 
