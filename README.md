@@ -81,8 +81,9 @@ This workflow:
 2. Sets up .NET Core.
 3. Restores dependencies.
 4. Builds the solution in `Release` mode.
-5. Publishes the API.
-6. Uploads the published artifacts.
+5. Runs tests.
+6. Publishes the API.
+7. Uploads the published artifacts.
 
 ### Deploy Job
 1. Downloads the published artifact.
